@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agendamento de Consulta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --primary: #1a3a2a;
+      --accent: #c8a96e;
+      --bg: #f4f1ec;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--bg);
+      min-height: 100vh;
+    }
+
+    /* PAGES */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* TYPOGRAPHY */
+    .display-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .field-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7c72;
+    }
+    .text-accent { color: var(--accent); }
+
+    /* LOGO */
+    .logo-mark, .confirm-badge {
+      font-size: 2rem;
+      color: var(--accent);
+      display: block;
+      animation: spin 10s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* SECTION NUMBER */
+    .section-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      min-width: 28px;
+    }
+
+    /* CARD */
+    .section-card {
+      border: 1px solid #ddd8ce;
+      border-radius: 14px;
+      box-shadow: 0 4px 28px rgba(26,58,42,0.07);
+      background: #fff;
+      animation: fadeUp 0.35s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FORM CONTROLS */
+    .form-control, .form-select {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--bg);
+      border-color: #ddd8ce;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      padding: 10px 14px;
+      color: #1c2b22;
+      transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(26,58,42,0.1);
+    }
+    .form-control.is-invalid, .form-select.is-invalid {
+      border-color: #dc3545;
+      background-color: #fdf2f2;
+    }
+    .invalid-feedback { font-size: 0.78rem; font-weight: 500; }
+
+    /* BUTTONS */
+    .btn-primary-custom {
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 12px 36px;
+      display: inline-flex;
+      align-items: center;
+      box-shadow: 0 4px 18px rgba(26,58,42,0.22);
+      transition: background-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .btn-primary-custom:hover {
+      background-color: #0f2419;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(26,58,42,0.28);
+    }
+    .btn-primary-custom:active { transform: translateY(0); }
+
+    .btn-outline-primary-custom {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.92rem;
+      padding: 10px 28px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .btn-outline-primary-custom:hover {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    /* CONFIRMATION ITEMS */
+    .confirm-item .c-label {
+      font-size: 0.72rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #6b7c72;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .confirm-item .c-value { font-size: 0.96rem; color: #1c2b22; }
+
+    @media (max-width: 576px) {
+      .display-title { font-size: 1.65rem; }
+      .section-card .card-body { padding: 1.25rem !important; }
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- ── PÁGINA: FORMULÁRIO (rota /) ── -->
+
+  <div id="page-form" class="page active">
+    <div class="container py-5">
+
+```
+  <div class="text-center mb-5">
+    <div class="logo-mark mb-2">✦</div>
+    <h1 class="display-title">Agendamento de Consulta</h1>
+    <p class="text-muted fw-light">Preencha os dados abaixo para agendar sua consulta</p>
+  </div>
+
+  <form id="scheduling-form" novalidate>
+
+    <!-- SEÇÃO 1: Dados do Paciente -->
+    <div class="card section-card mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+          <span class="section-number">01</span>
+          <h2 class="section-title mb-0">Dados do Paciente</h2>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="nome" class="form-label field-label">Nome <span class="text-accent">*</span></label>
+            <input type="text" class="form-control" id="nome" placeholder="Seu nome"/>
+            <div class="invalid-feedback" id="err-nome"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="sobrenome" class="form-label field-label">Sobrenome <span class="text-accent">*</span></label>
+            <input type="text" class="form-control" id="sobrenome" placeholder="Seu sobrenome"/>
+            <div class="invalid-feedback" id="err-sobrenome"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="cpf" class="form-label field-label">CPF <span class="text-accent">*</span></label>
+            <input type="text" class="form-control" id="cpf" placeholder="000.000.000-00" maxlength="14"/>
+            <div class="invalid-feedback" id="err-cpf"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="nascimento" class="form-label field-label">Data de Nascimento <span class="text-accent">*</span></label>
+            <input type="date" class="form-control" id="nascimento"/>
+            <div class="invalid-feedback" id="err-nascimento"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="telefone" class="form-label field-label">Telefone <span class="text-accent">*</span></label>
+            <input type="text" class="form-control" id="telefone" placeholder="(00) 00000-0000" maxlength="15"/>
+            <div class="invalid-feedback" id="err-telefone"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="cep" class="form-label field-label">CEP <span class="text-accent">*</span></label>
+            <input type="text" class="form-control" id="cep" placeholder="00000-000" maxlength="9"/>
+            <div class="invalid-feedback" id="err-cep"></div>
+          </div>
+          <div class="col-12">
+            <label for="endereco" class="form-label field-label">Endereço <span class="text-accent">*</span></label>
+            <input type="text" class="form-control" id="endereco" placeholder="Rua, número, bairro, cidade"/>
+            <div class="invalid-feedback" id="err-endereco"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO 2: Dados da Consulta -->
+    <div class="card section-card mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+          <span class="section-number">02</span>
+          <h2 class="section-title mb-0">Dados da Consulta</h2>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="clinica" class="form-label field-label">Clínica <span class="text-accent">*</span></label>
+            <select class="form-select" id="clinica">
+              <option value="">Selecione uma clínica</option>
+              <option>Clínica Central</option>
+              <option>Clínica Norte</option>
+              <option>Clínica Sul</option>
+              <option>Hospital Geral</option>
+            </select>
+            <div class="invalid-feedback" id="err-clinica"></div>
+          </div>
+          <div class="col-md-6">
+            <label for="especialidade" class="form-label field-label">Especialidade <span class="text-accent">*</span></label>
+            <select class="form-select" id="especialidade">
+              <option value="">Selecione uma especialidade</option>
+              <option>Clínica Geral</option>
+              <option>Cardiologia</option>
+              <option>Dermatologia</option>
+              <option>Ortopedia</option>
+              <option>Pediatria</option>
+              <option>Neurologia</option>
+              <option>Oftalmologia</option>
+            </select>
+            <div class="invalid-feedback" id="err-especialidade"></div>
+          </div>
+          <div class="col-12">
+            <label for="observacao" class="form-label field-label">
+              Observação <span class="text-muted fw-light small">(opcional)</span>
+            </label>
+            <textarea class="form-control" id="observacao" rows="3"
+              placeholder="Descreva sintomas ou informações relevantes"></textarea>
+          </div>
+          <div class="col-12">
+            <label for="dataHora" class="form-label field-label">Data e Hora do Agendamento <span class="text-accent">*</span></label>
+            <input type="datetime-local" class="form-control" id="dataHora"/>
+            <div class="invalid-feedback" id="err-dataHora"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RODAPÉ DO FORMULÁRIO -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <p class="text-muted small mb-0"><span class="text-accent">*</span> Campos obrigatórios</p>
+      <button type="submit" class="btn btn-primary-custom">
+        Enviar Agendamento
+        <svg class="ms-2" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+  </form>
+</div>
+```
+
+  </div>
+
+  <!-- ── PÁGINA: CONFIRMAÇÃO (rota /agendamento) ── -->
+
+  <div id="page-confirmation" class="page">
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card section-card">
+            <div class="card-body p-4 p-md-5">
+
+```
+          <div class="text-center mb-5">
+            <div class="confirm-badge mb-3">✦</div>
+            <h1 class="display-title mb-2">Consulta Agendada!</h1>
+            <p class="text-muted fw-light">Seu agendamento foi realizado com sucesso.</p>
+          </div>
+
+          <div class="mb-4 pb-4 border-bottom">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="section-number">01</span>
+              <h5 class="section-title mb-0">Dados do Paciente</h5>
+            </div>
+            <div class="row g-3" id="confirm-patient"></div>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <span class="section-number">02</span>
+              <h5 class="section-title mb-0">Dados da Consulta</h5>
+            </div>
+            <div class="row g-3" id="confirm-appt"></div>
+          </div>
+
+          <div class="text-center mt-4">
+            <button class="btn btn-outline-primary-custom" onclick="goBack()">
+              ← Novo Agendamento
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ── MÁSCARAS ──────────────────────────────────────────
+    document.getElementById('cpf').addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9)      v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{0,3})/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/(\d{3})(\d{0,3})/, '$1.$2');
+      this.value = v;
+    });
+
+    document.getElementById('telefone').addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 10)     v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+      else if (v.length > 6) v = v.replace(/(\d{2})(\d{4,5})(\d{0,4})/, '($1) $2-$3');
+      else if (v.length > 2) v = v.replace(/(\d{2})(\d{0,5})/, '($1) $2');
+      this.value = v;
+    });
+
+    document.getElementById('cep').addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 8);
+      if (v.length > 5) v = v.replace(/(\d{5})(\d{0,3})/, '$1-$2');
+      this.value = v;
+    });
+
+    // ── ROTEAMENTO ─────────────────────────────────────────
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+      const path = id === 'page-confirmation' ? '/agendamento' : '/';
+      history.pushState({ page: id }, '', path);
+    }
+
+    window.addEventListener('popstate', function (e) {
+      const page = e.state?.page || 'page-form';
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(page).classList.add('active');
+    });
+
+    (function () {
+      if (window.location.pathname === '/agendamento') {
+        const data = sessionStorage.getItem('agendamentoData');
+        if (data) { renderConfirmation(JSON.parse(data)); showPage('page-confirmation'); }
+        else showPage('page-form');
+      } else {
+        history.replaceState({ page: 'page-form' }, '', '/');
+      }
+    })();
+
+    // ── VALIDAÇÃO ──────────────────────────────────────────
+    function clearErrors() {
+      document.querySelectorAll('.form-control.is-invalid, .form-select.is-invalid')
+        .forEach(el => el.classList.remove('is-invalid'));
+      document.querySelectorAll('.invalid-feedback')
+        .forEach(el => el.textContent = '');
+    }
+
+    function setError(fieldId, message) {
+      const field = document.getElementById(fieldId);
+      const errEl = document.getElementById('err-' + fieldId);
+      if (field) field.classList.add('is-invalid');
+      if (errEl) errEl.textContent = message;
+    }
+
+    function isValidCPF(cpf) {
+      const c = cpf.replace(/\D/g, '');
+      if (c.length !== 11 || /^(\d)\1+$/.test(c)) return false;
+      let s = 0;
+      for (let i = 0; i < 9; i++) s += parseInt(c[i]) * (10 - i);
+      let r = (s * 10) % 11; if (r >= 10) r = 0;
+      if (r !== parseInt(c[9])) return false;
+      s = 0;
+      for (let i = 0; i < 10; i++) s += parseInt(c[i]) * (11 - i);
+      r = (s * 10) % 11; if (r >= 10) r = 0;
+      return r === parseInt(c[10]);
+    }
+
+    function validateForm(data) {
+      let valid = true;
+
+      [['nome', 'Nome é obrigatório'],
+       ['sobrenome', 'Sobrenome é obrigatório'],
+       ['endereco', 'Endereço é obrigatório']
+      ].forEach(([id, msg]) => {
+        if (!data[id]) { setError(id, msg); valid = false; }
+      });
+
+      if (!data.cpf) {
+        setError('cpf', 'CPF é obrigatório'); valid = false;
+      } else if (!isValidCPF(data.cpf)) {
+        setError('cpf', 'CPF inválido'); valid = false;
+      }
+
+      if (!data.nascimento) {
+        setError('nascimento', 'Data de nascimento é obrigatória'); valid = false;
+      }
+
+      if (!data.telefone) {
+        setError('telefone', 'Telefone é obrigatório'); valid = false;
+      } else if (data.telefone.replace(/\D/g, '').length < 10) {
+        setError('telefone', 'Telefone inválido'); valid = false;
+      }
+
+      if (!data.cep) {
+        setError('cep', 'CEP é obrigatório'); valid = false;
+      } else if (data.cep.replace(/\D/g, '').length !== 8) {
+        setError('cep', 'CEP inválido'); valid = false;
+      }
+
+      if (!data.clinica) {
+        setError('clinica', 'Selecione uma clínica'); valid = false;
+      }
+
+      if (!data.especialidade) {
+        setError('especialidade', 'Selecione uma especialidade'); valid = false;
+      }
+
+      if (!data.dataHora) {
+        setError('dataHora', 'Data e hora são obrigatórias'); valid = false;
+      } else if (new Date(data.dataHora) <= new Date()) {
+        setError('dataHora', 'O agendamento deve ser em uma data/hora futura'); valid = false;
+      }
+
+      return valid;
+    }
+
+    // ── SUBMIT ─────────────────────────────────────────────
+    document.getElementById('scheduling-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      clearErrors();
+
+      const g = id => document.getElementById(id).value.trim();
+      const data = {
+        nome: g('nome'), sobrenome: g('sobrenome'), cpf: g('cpf'),
+        nascimento: g('nascimento'), telefone: g('telefone'), cep: g('cep'),
+        endereco: g('endereco'), clinica: g('clinica'), especialidade: g('especialidade'),
+        observacao: g('observacao'), dataHora: g('dataHora'),
+      };
+
+      if (!validateForm(data)) {
+        document.querySelector('.is-invalid')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      sessionStorage.setItem('agendamentoData', JSON.stringify(data));
+      renderConfirmation(data);
+      showPage('page-confirmation');
+    });
+
+    // ── CONFIRMAÇÃO ────────────────────────────────────────
+    function fmtDate(s) {
+      if (!s) return '—';
+      const [y, m, d] = s.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function fmtDateTime(s) {
+      if (!s) return '—';
+      return new Date(s).toLocaleString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function confirmItem(label, value, full = false) {
+      return `<div class="${full ? 'col-12' : 'col-md-6 col-sm-6'}">
+        <div class="confirm-item">
+          <span class="c-label">${label}</span>
+          <span class="c-value">${value || '—'}</span>
+        </div>
+      </div>`;
+    }
+
+    function renderConfirmation(data) {
+      document.getElementById('confirm-patient').innerHTML =
+        confirmItem('Nome', data.nome) +
+        confirmItem('Sobrenome', data.sobrenome) +
+        confirmItem('CPF', data.cpf) +
+        confirmItem('Data de Nascimento', fmtDate(data.nascimento)) +
+        confirmItem('Telefone', data.telefone) +
+        confirmItem('CEP', data.cep) +
+        confirmItem('Endereço', data.endereco, true);
+
+      document.getElementById('confirm-appt').innerHTML =
+        confirmItem('Clínica', data.clinica) +
+        confirmItem('Especialidade', data.especialidade) +
+        confirmItem('Data e Hora', fmtDateTime(data.dataHora)) +
+        (data.observacao ? confirmItem('Observação', data.observacao, true) : '');
+    }
+
+    // ── VOLTAR ─────────────────────────────────────────────
+    function goBack() {
+      document.getElementById('scheduling-form').reset();
+      clearErrors();
+      sessionStorage.removeItem('agendamentoData');
+      showPage('page-form');
+    }
+  </script>
+
+</body>
+</html>
